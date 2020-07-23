@@ -1,0 +1,54 @@
+
+################################################
+#Modulo 3 - Tercera parte - organizacion de los datos
+################################################
+library(dplyr)
+library(readr)
+agregados <- read_csv("C:/cursoR/agregados.csv")
+View(agregados)
+
+agregados.sort<-arrange(agregados, CCAA)
+
+#eliminar las primeras 5 lineas de observaciones
+
+agregados.sort<-agregados.sort[6:length(agregados$CCAA),]
+
+#ordenacion descencente:
+agregados.sort<-arrange(agregados.sort, desc(CCAA))
+
+
+# apartir de aqui trabajamos con la base de datos desagregados
+#se muestran los datos diarios totales en Espana:
+library(readr)
+desagregados <- read_delim("C:/cursoR/desagregados.csv", 
+                           ";", escape_double = FALSE, trim_ws = TRUE, skip = 2)
+
+View(desagregados)
+
+# Fecha en la que se ha producido el maximo numero de contagios
+desagregados.sort<-arrange(desagregados, desc(CONTAGIADOS))
+desagregados.sort[1,1]
+
+# Calculamos el numero medio de contagios diarios:
+summarize(desagregados, mean(CONTAGIADOS, na.rm =T))
+# Otra forma equivalente:
+mean(desagregados$CONTAGIADOS, na.rm =T)
+# Observamos el redondeo
+fechas<-desagregados$Dia
+fechas<-as.Date(fechas, "%d/%m/%y") 
+meses<-months(fechas)
+datos<-select(desagregados, Dia, CONTAGIADOS, HOSPITALIZADOS, UCI, FALLECIDOS, RECUPERADOS)
+datos<-mutate(datos, mes=meses)
+#reordenar las posiciones de las variables:
+datos<-select(datos, mes, CONTAGIADOS, everything())
+#agrupamos por meses y calculamos el n?mero de contagios medio:
+por_mes<-group_by(datos, mes)
+summarize(por_mes, media_casos=mean(CONTAGIADOS, na.rm=T))
+
+#Ejercicios propuestos:
+#1. Con los datos de agregados, seleccionar las variables CCAA, Fecha
+# PRC+ y TestAc+ 
+
+#2. Realizar una agrupacion por 
+#comunidades autonomas y calcular el numero maximo de infectados
+#en cada una de ellas.

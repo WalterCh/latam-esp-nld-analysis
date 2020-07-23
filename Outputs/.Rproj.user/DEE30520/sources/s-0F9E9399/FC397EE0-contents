@@ -1,0 +1,72 @@
+#########################################################################
+#Ejercicio Final Semana 1
+#########################################################################
+#1. Cargar la base de datos Peatones_2020.csv después de descargarla de 
+#la web del ayuntamiento de Madrid: datos.madrid.es
+#las instrucciones debemos escribirlas para visualizar el reporte.
+#IMPORTANTE: Los reportes solo generan diálogo con la consola, no elementos externos como 
+#la visualización de una base de datos con View o un help
+
+library(readr)
+
+# https://datos.madrid.es/egob/catalogo/300321-4-aforos-peatones-bicicletas.csv
+
+# De la web datos.madrid.es ir a catalogo de datos -> afororo de peatones y bicicletas
+# Se descarga un fichero PEATONES_2020.csv
+# Cargar este fichero en tu sistema, mejor por el icono de import dataSet
+# Si no puedes usa la siguiente instrucción
+
+# Mac tiene problemas con las tildes, es necesario poner fileEncoding="latin1"
+PEATONES_2020 <- read.csv2("~/Google Drive/Sonia/Asignaturas/R/2020-junio/Jornada5/PEATONES_2020.csv", header=FALSE, comment.char="#", fileEncoding="latin1")
+# Windows
+#PEATONES_2020 <- read.csv("E:/cursoR/Semana 1/Dia 5/Peatones/PEATONES_2020.csv", sep= ";")
+
+#2. Comprobamos su contenido para familiarizarnos con sus datos:
+View(PEATONES_2020)
+
+#3. Calcular la dimensión de la tabla de datos de peatones
+# Cuantas observaciones tiene? Cuantas variables? 
+dim(PEATONES_2020)
+
+#4. Crear un objeto que contenga solo los datos del distrito "Centro"
+centro<-PEATONES_2020[PEATONES_2020$DISTRITO =="Centro",]
+centro
+
+#5. Crear un objeto que contenga solo los datos del distrito "Centro"
+# a las 23:00
+centro23h<-PEATONES_2020[(PEATONES_2020$DISTRITO=="Centro")&(PEATONES_2020$HORA=="23:00"),]
+head(centro23h)
+
+# 6. Crear un gráfico que represente los peatones en el centro a las 23h
+# en el periodo que contiene la base de datos (enero-marzo)
+plot(centro23h$PEATONES, 
+     col="red", 
+     type = 'l',
+     main = "Peatones en el centro a las 23h",
+     ylab = "Peatones",
+     xlab = "Días a partir del 1 de enero de 2020"
+     )
+
+#7. Calcular el número de peatones EN TOTAL el 8 de marzo 
+marzo8<-PEATONES_2020[PEATONES_2020$FECHA=="08/03/2020",]
+sum(marzo8$PEATONES, na.rm = T)
+
+#8. Representar un grafico con los datos del 8 de marzo 
+#
+plot(marzo8$PEATONES, pch = 18, col = "blue")
+
+#9. Crear datos para el día 30 de marzo
+marzo30<-PEATONES_2020[PEATONES_2020$FECHA=="30/03/2020",]
+head(marzo30)
+
+#10. BUSCA EN LA DOCUMENTACIÓN LA FUNCIÓN SUM.... 
+
+sum(marzo30$PEATONES, na.rm = T)
+
+#11
+plot(marzo30$PEATONES,pch = 20, col = "orange")
+
+##############################  FIN   ########################
+
+
+

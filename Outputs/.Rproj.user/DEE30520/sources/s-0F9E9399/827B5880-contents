@@ -1,0 +1,63 @@
+################################################################################
+#Visualizacion con ggplot2 primera parte
+
+#Cargamos la libreria tidyverse que previamente debe instalarse
+library(tidyverse)
+
+#Cargamos el dataset mpg contenido en tidyverse
+data(mpg)
+#Buscamos informacion sobre esos datos
+help(mpg)
+
+# Ejemplo de diagrama de barras una variable discreta manufacturer
+unique(mpg$manufacturer)
+ggplot(data=mpg)+
+  geom_bar(mapping=aes(x=manufacturer, fill =manufacturer) )
+
+# Ejemplo de diagrama de barras una variable continua: displ
+ggplot(data=mpg)+
+  geom_histogram(mapping=aes(x=displ, fill =drv))
+
+# Relacion entre la capacidad del motor y la eficiencia de combustible
+# (respecto a las millas recorridas)
+# Ejemplo geom_point sin y con clasificacion por colores
+ggplot(data=mpg)+
+  geom_point(mapping=aes(x=displ, y=hwy), color="Blue")
+ggplot(data=mpg)+
+  geom_point(mapping=aes(x=displ, y=hwy, color=class))
+
+###################################################################################
+#Visualizacion con ggplot2 segunda parte:
+
+# Ejemplo geom_smooth sin y con clasificación por tipos
+
+ggplot(data=mpg)+
+  geom_point(mapping=aes(x=displ, y=hwy), color="Blue")+
+  geom_smooth(mapping=aes(x=displ, y=hwy), color="Red")
+ggplot(data=mpg)+
+  geom_point(mapping=aes(x=displ, y=hwy, color=drv))+
+  geom_smooth(mapping=aes(x=displ, y=hwy, linetype=drv))
+
+# Ejemplo de facetas para variables enumeradas
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color=class)) +
+  facet_wrap(~ class, nrow = 4)
+
+#Ejemplo de facetas con grid, de dos variables comparando n de cilindros (4-8) con traccion (4-f-r)
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color=manufacturer)) +
+  facet_grid(drv ~ cyl)
+#igual incluyendo color para diferenciar mejor los tipos de coche
+p<-ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy))
+
+
+p<-p+facet_grid(drv ~ cyl)
+
+# Otros ejemplos de facets discriminando solo una variable
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color=class)) +
+  facet_grid(drv ~ .)
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color=class)) +
+  facet_grid(cyl~ .)

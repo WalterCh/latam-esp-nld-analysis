@@ -1,0 +1,65 @@
+#########################################################################
+#Ejercicio Final Semana 1
+#########################################################################
+#1. Cargar la base de datos Peatones_2020.csv despues de descargarla de 
+#la web del ayuntamiento de Madrid: datos.madrid.es
+#las instrucciones debemos escribirlas para visualizar el reporte.
+#IMPORTANTE: Los reportes solo generan dialogo con la consola, no elementos externos como 
+#la visualizacion de una base de datos con View o un help
+
+library(readr)
+
+# https://datos.madrid.es/egob/catalogo/300321-4-aforos-peatones-bicicletas.csv
+
+# De la web datos.madrid.es ir a catalogo de datos -> afororo de peatones y bicicletas
+# Se descarga un fichero PEATONES_2020.csv
+# Cargar este fichero en tu sistema, mejor por el icono de import dataSet
+# Si no puedes usa la siguiente instruccion
+
+# Para evitar problemas con las tildes, es necesario poner fileEncoding="latin1"
+# Hay varias opciones para realizar la lectura. 
+# La funcion read.csv2 toma ; como separador por defecto:
+
+PEATONES_2020 <- read.csv("PEATONES_2020.csv", sep= ";",  fileEncoding="latin1")
+PEATONES_2020 <- read.csv2("PEATONES_2020.csv", header=TRUE,  fileEncoding="latin1")
+
+
+#2. Comprobamos su contenido para familiarizarnos con sus datos:
+
+
+#3. Calcular la dimension de la tabla de datos de peatones
+# Cuantas observaciones tiene? Cuantas variables? 
+
+
+#4. Crear un objeto que contenga solo los datos del distrito "Centro"
+
+
+#5. Crear un objeto que contenga solo los datos del distrito "Centro"
+# a las 23:00
+
+
+# 6. Crear un grafico que represente los peatones en el centro a las 23h
+# en el periodo que contiene la base de datos (enero-marzo)
+
+
+#7. BUSCA EN LA DOCUMENTACIoN LA FUNCIoN sum()
+#y Calcula el numero de peatones EN TOTAL el 8 de marzo 
+
+
+#8. Representar un grafico con los datos del 8 de marzo 
+
+
+#9. Repite el ejercicio 6 para el dia 30 de marzo
+
+
+#10.  Repite el ejercicio 7 para el d?a 30 de marzo
+
+
+#11. Repite el ejercicio 8 para el d?a 30 de marzo
+
+
+
+##############################  FIN   ########################
+
+
+

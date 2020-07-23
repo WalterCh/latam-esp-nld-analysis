@@ -1,0 +1,32 @@
+{
+    "id": "F2802AEB",
+    "path": null,
+    "project_path": null,
+    "type": "r_dataframe",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1595444192717.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "expression": "VariosPaises_Covid19",
+        "caption": "VariosPaises_Covid19",
+        "totalObservations": "573",
+        "displayedObservations": "573",
+        "variables": "7",
+        "cacheKey": "630F5E5C",
+        "object": "VariosPaises_Covid19",
+        "environment": "",
+        "contentUrl": "grid_resource/gridviewer.html?env=&obj=VariosPaises_Covid19&cache_key=630F5E5C&max_cols=50",
+        "preview": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 8296805283531090276,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1595444192717,
+    "read_only": false,
+    "read_only_alternatives": []
+}

@@ -1,0 +1,33 @@
+library(tidyverse)
+library(nycflights13)
+library(dplyr)
+flights #muestra el contenido pero no lo carga
+data(flights) #se crea el objeto en el ws pero no se carga (ev. perezosa)
+filter(flights, month==1, day==1) #al utilizar el data set, se produce la carga (evaluación perezosa)
+jan1<-filter(flights, month==1, day==1) #se crea el objeto pero no se muestra el contenido
+(jan1<-filter(flights, month==1, day==1)) #se crea el objeto y se muestra el contenido
+
+#un ejemplo de composicion de operaciones: (lenguaje funcional)
+#1. Completar los comentarios:
+AmericanAirlines<-select(filter(flights, carrier=="AA"), year:day, ends_with("delay"), air_time, dest)
+#
+mutate(AmericanAirlines, gain=arr_delay-dep_delay)
+#
+AmericanAirlines<-mutate(AmericanAirlines, gain=arr_delay-dep_delay)
+#
+AAby_dest<-group_by(AmericanAirlines, dest)
+#
+AAdelay<-summarize(AAby_dest, count=n(), delay =mean(arr_delay, na.rm=TRUE))
+#
+AAdelay<-AmericanAirlines%>%group_by(dest)%>%
+        summarize(count=n(), delay=mean(arr_delay, na.rm = TRUE))
+#
+#2. Ejecutar, comprender y comentar:
+nc<-flights%>%filter(!is.na(dep_delay) , !is.na(arr_delay))
+#
+nc%>%group_by(year, month, day)%>%summarize(mean=mean(dep_delay))
+#
+
+# 3. La funcion count(x) cuenta el numero de repeticiones en x
+# utilizala para calcular la cantidad de vuelos no cancelados 
+# por cada destino:
