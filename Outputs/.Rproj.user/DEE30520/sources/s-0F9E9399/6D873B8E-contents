@@ -1,2 +1,0 @@
-paises<-VariosPaises_Covid19
-names(paises)[3]<-"CASOS"
