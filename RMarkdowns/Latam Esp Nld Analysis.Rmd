@@ -1,0 +1,83 @@
+---
+title: "COVID-19 Latam + Esp + Nld Analysis"
+author: "Walter Chanavá"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+    code_folding: hide
+    df_print: paged
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T,
+                      message = F,
+                      error = F,
+                      fig.align = 'center',
+                      warning = F)
+```
+
+# Loading and Exploring Data
+
+## Packages
+
+```{r packages}
+library(readr)
+library(dplyr)
+library(ggplot2)
+```
+
+## Data
+
+```{r}
+
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
