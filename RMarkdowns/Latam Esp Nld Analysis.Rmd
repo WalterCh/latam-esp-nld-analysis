@@ -3,14 +3,14 @@ title: "COVID-19 Latam + Esp + Nld Analysis"
 author: "Walter Chanavá"
 date: "`r Sys.Date()`"
 output:
-  prettydoc::html_pretty:
-    theme: architect
-    highlight: github
-    code_folding: hide
+  html_document:
+    theme: spacelab
+    highlight: tango
     df_print: paged
     toc: true
     toc_float: true
     number_sections: true
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
@@ -21,6 +21,10 @@ knitr::opts_chunk$set(echo = T,
                       warning = F)
 ```
 
+```{r echo=FALSE, out.width="75%"}
+knitr::include_graphics("covid-image.jpg")
+```
+
 # Loading and Exploring Data
 
 ## Packages
@@ -29,22 +33,144 @@ knitr::opts_chunk$set(echo = T,
 library(readr)
 library(dplyr)
 library(ggplot2)
+library(ggrepel)
+library(tidyr)
 ```
 
-## Data
+- readr: reading files
+- dplyr: to manipulate the tables
+- ggplot2: to visualize the data
+- ggrepel: to add labels in plots
+- tidyr: to manipulate the data
+
+```{r sourcing functions}
+source("../Scripts/R0-function.R")
+source("../Scripts/custom-ggplot2-theme.R")
+source("../Scripts/Moving-average-function.R")
+```
+
+## Data {.tabset}
+
+```{r data}
+covid <- read_csv("../Data/VariosPaises_Covid19Actualizado.csv", na = "#VALUE!")
+
+country_pops <- tibble(
+  COUNTRY = unique(covid$COUNTRY),
+  POP = c(11673021, 212559417, 212559417, 50882891, 17643054,
+          6486205, 17915568, 128932753, 17134872, 7132538,
+          32971854, 2860853, 46754778, 3473730)
+)
+
+covid_tbl <- covid %>% 
+  left_join(country_pops) %>%
+  mutate(CONTAGIADOS_POND = CONTAGIADOS/POP,
+         CONTAGIADOS_MILL = CONTAGIADOS/1000000) %>%
+  group_by(COUNTRY) %>% 
+  mutate(CONTAGIADOS_MA = mov_avg(CONTAGIADOS, 7),
+         FALLECIDOS_MA = mov_avg(FALLECIDOS, 7),
+         RECUPERADOS_MA = mov_avg(RECUPERADOS, 7)) %>% 
+  mutate(DIA = 1:n()) %>% 
+  ungroup() %>% 
+  mutate(COUNTRY = as.factor(COUNTRY),
+         FECHA = as.Date(FECHA, "%d/%m/%Y"),
+         SEMANA = as.numeric(strftime(FECHA, format = "%V")),
+         IP = CONTAGIADOS + FALLECIDOS - RECUPERADOS,
+         IP_MA = CONTAGIADOS_MA + FALLECIDOS_MA - RECUPERADOS_MA,
+         R0_3 = R0(CONTAGIADOS, 3),
+         R0_7 = R0(CONTAGIADOS, 7),
+         R0_14 = R0(CONTAGIADOS, 14),
+         R0_14_MA = R0(CONTAGIADOS_MA, 14))
+covid_tbl
+```
+
+The dataset consists of 2300 observations of daily cases of COVID-19 from 14 Latin america countries, plus Spain and Netherlands, from March 2nd to Sep 9th of 2020.
+
+### Infected Group 1 (Contagiados)
+
+```{r fig.width=5, fig.heigth = 4}
+ggplot(data = covid_tbl %>% 
+         filter(COUNTRY %in% c("URUGUAY")), 
+       aes(x = FECHA, y = CONTAGIADOS)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  scale_x_date(date_labels = "%b",
+               breaks = seq.Date(from = as.Date("2020-04-01"), 
+                                 to = as.Date("2020-08-01"), 
+                                 by = "month")) +
+  facet_wrap(~COUNTRY) +
+  custom_theme +
+  theme(strip.text = element_text(size = 15))
+```
+
+### Infected Group 2 (Contagiados)
+
+```{r fig.width=10, fig.height=7}
+ggplot(data = covid_tbl %>% 
+         filter(COUNTRY %in% c("EL SALVADOR", "PUERTO RICO", "PARAGUAY")), 
+       aes(x = FECHA, y = CONTAGIADOS)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  scale_x_date(date_labels = "%b",
+               breaks = seq.Date(from = as.Date("2020-04-01"), 
+                                 to = as.Date("2020-08-01"), 
+                                 by = "month")) +
+  facet_wrap(~COUNTRY, nrow = 2) +
+  custom_theme +
+  theme(strip.text = element_text(size = 15))
+```
+
+### Infected Group 3 (Contagiados)
 
 ```{r}
-
+ggplot(data = covid_tbl %>% 
+         filter(COUNTRY %in% c("GUATEMALA", "NETHERLAND", "BOLIVIA",
+                               "ECUADOR")), 
+       aes(x = FECHA, y = CONTAGIADOS)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  scale_x_date(date_labels = "%b",
+               breaks = seq.Date(from = as.Date("2020-04-01"), 
+                                 to = as.Date("2020-08-01"), 
+                                 by = "month")) +
+  facet_wrap(~COUNTRY) +
+  custom_theme +
+  theme(strip.text = element_text(size = 15))
 ```
 
+### Infected Group 4 (Contagiados)
 
 ```{r}
+ggplot(data = covid_tbl %>% 
+         filter(COUNTRY %in% c("CHILE", "SPAIN", "MEXICO", "COLOMBIA",
+                               "PERU")), 
+       aes(x = FECHA, y = CONTAGIADOS)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  scale_x_date(date_labels = "%b",
+               breaks = seq.Date(from = as.Date("2020-04-01"), 
+                                 to = as.Date("2020-08-01"), 
+                                 by = "month")) +
+  facet_wrap(~COUNTRY) +
+  custom_theme +
+  theme(strip.text = element_text(size = 15))
 ```
 
+### Infected Group 5 (Contagiados)
 
 ```{r}
+ggplot(data = covid_tbl %>% 
+         filter(COUNTRY %in% c("BRAZIL")), 
+       aes(x = FECHA, y = CONTAGIADOS)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  scale_x_date(date_labels = "%b",
+               breaks = seq.Date(from = as.Date("2020-03-01"), 
+                                 to = as.Date("2020-09-01"), 
+                                 by = "month")) +
+  facet_wrap(~COUNTRY) +
+  custom_theme +
+  theme(strip.text = element_text(size = 15))
 ```
-
 
 ```{r}
 ```
