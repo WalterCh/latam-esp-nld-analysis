@@ -32,7 +32,7 @@ covid_tbl <- covid %>%
   group_by(COUNTRY) %>% 
   mutate(CONTAGIADOS_MA = mov_avg(CONTAGIADOS, 7),
          FALLECIDOS_MA = mov_avg(FALLECIDOS, 7),
-         RECUPERADOS = mov_avg(RECUPERADOS, 7)) %>% 
+         RECUPERADOS_MA = mov_avg(RECUPERADOS, 7)) %>% 
   mutate(DIA = 1:n()) %>% 
   ungroup() %>% 
   mutate(COUNTRY = as.factor(COUNTRY),
