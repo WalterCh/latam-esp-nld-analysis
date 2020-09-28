@@ -34,16 +34,20 @@ library(readr)
 library(dplyr)
 library(ggplot2)
 library(ggrepel)
+library(ggpubr)
 library(tidyr)
 library(lubridate)
+library(gsheet)
 ```
 
 - readr: reading files
 - dplyr: to manipulate the tables
 - ggplot2: to visualize the data
 - ggrepel: to add labels in plots
+- ggpubr: to show arrange plots in one image
 - tidyr: to manipulate the data
 - lubridate: to work with dates in R
+- gsheet: to read google spreadsheet
 
 ```{r sourcing functions}
 source("../Scripts/R0-function.R")
@@ -54,7 +58,12 @@ source("../Scripts/Moving-average-function.R")
 ## Data {.tabset}
 
 ```{r data}
-covid <- read_csv("../Data/VariosPaises_Covid19Actualizado.csv", na = "#VALUE!")
+# Local
+# covid <- read_csv("../Data/VariosPaises_Covid19Actualizado.csv", 
+#                   na = "#VALUE!")
+
+# Online
+covid <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1YnsFPlJHJ9TQB5lZnqoEY6HZKkjRbns2kBr9I4HwNG4/edit?usp=sharing")
 
 country_pops <- tibble(
   COUNTRY = unique(covid$COUNTRY),
@@ -65,39 +74,36 @@ country_pops <- tibble(
 
 covid_tbl <- covid %>% 
   left_join(country_pops) %>%
-  mutate(CONTAGIADOS_POND = CONTAGIADOS/POP,
-         CONTAGIADOS_MILL = CONTAGIADOS/1000000) %>%
+  mutate(CONTAGIADOS_MILL = CONTAGIADOS/POP * 1000000,
+         FALLECIDOS_MILL = FALLECIDOS/POP * 1000000) %>%
   group_by(COUNTRY) %>% 
   mutate(CONTAGIADOS_MA = mov_avg(CONTAGIADOS, 7),
+         CONTAGIADOS_MILL_MA = mov_avg(CONTAGIADOS_MILL, 7),
          FALLECIDOS_MA = mov_avg(FALLECIDOS, 7),
+         FALLECIDOS_MILL_MA = mov_avg(FALLECIDOS_MILL, 7),
          RECUPERADOS_MA = mov_avg(RECUPERADOS, 7)) %>% 
   mutate(DIA = 1:n()) %>% 
   ungroup() %>% 
   mutate(COUNTRY = as.factor(COUNTRY),
-         FECHA = as.Date(FECHA, "%d/%m/%Y"),
-         SEMANA = as.numeric(strftime(FECHA, format = "%V")),
+         FECHA = dmy(FECHA),
          IP = CONTAGIADOS + FALLECIDOS - RECUPERADOS,
-         IP_MA = CONTAGIADOS_MA + FALLECIDOS_MA - RECUPERADOS_MA,
-         R0_3 = R0(CONTAGIADOS, 3),
-         R0_7 = R0(CONTAGIADOS, 7),
-         R0_14 = R0(CONTAGIADOS, 14),
-         R0_14_MA = R0(CONTAGIADOS_MA, 14))
+         R0_14 = R0(CONTAGIADOS, 14))
 covid_tbl
 ```
 
-The dataset consists of 2300 observations of daily cases of COVID-19 from 14 Latin america countries, plus Spain and Netherlands, from March 2nd to Sep 9th of 2020.
+The dataset consists of `r nrow(covid_tbl)` observations of daily cases of COVID-19 of Spain, Netherlands and some latin american countries (`r length(unique(covid_tbl$COUNTRY))` in total), from March 2nd to Sep 9th of 2020.
 
 ### Infected {-}
 
 #### All-together
 
-```{r}
-ggplot(data = covid_tbl %>% 
-         filter(FECHA <= as.Date("2020-08-09")), 
-       aes(x = FECHA, y = CONTAGIADOS_MA, col = COUNTRY)) +
+
+```{r fig.width=10}
+infected_p1 <- covid_tbl %>% 
+  filter(FECHA <= ymd("2020-08-09")) %>% 
+  ggplot(aes(x = FECHA, y = CONTAGIADOS_MA, col = COUNTRY)) +
   geom_point() +
   geom_line() +
-  # geom_smooth(se = FALSE) +
   geom_label_repel(data = . %>% filter(FECHA == as.Date("2020-08-09"),
                                        COUNTRY %in% c("BRAZIL", "PERU", 
                                                       "MEXICO", "COLOMBIA")), 
@@ -112,14 +118,37 @@ ggplot(data = covid_tbl %>%
                                  by = "month")) +
   custom_theme +
   labs(y = "CONTAGIADOS", caption = "* Países con número de contagiados en la última semana menor a 5000: Chile,\nBolivia, Ecuador, Guatemala, Paraguay, España, Puerto Rico, El Salvador, Países Bajos y\nUruguay")
+
+infected_p2 <- covid_tbl %>% 
+  filter(FECHA <= ymd("2020-08-09")) %>% 
+  ggplot(aes(x = FECHA, y = CONTAGIADOS_MILL_MA, col = COUNTRY)) +
+  geom_point() +
+  geom_line() +
+  # geom_smooth(se = FALSE) +
+  geom_label_repel(data = . %>% filter(FECHA == as.Date("2020-08-09"),
+                                       COUNTRY %in% c("BRAZIL", "PERU", 
+                                                      "MEXICO", "COLOMBIA")), 
+                   aes(label = COUNTRY), family = "Poppins", 
+                   xlim = as.Date("2020-08-15"), ylim = c(300, 4000)) +
+  geom_label(aes(label = "*"), family = "Poppins", x = as.Date("2020-08-20"),
+             y = 80, col = "black") +
+  scale_x_date(date_labels = "%b",
+               limits = as.Date(c("2020-03-01", "2020-09-15")),
+               breaks = seq.Date(from = as.Date("2020-03-01"),
+                                 to = as.Date("2020-09-01"),
+                                 by = "month")) +
+  custom_theme +
+  labs(y = "CONTAGIADOS POR MILLON", caption = "* Países con número de contagiados por millón en la última semana menor a 200: Chile,\nBolivia, Ecuador, Guatemala, Paraguay, España, Puerto Rico, El Salvador, Países Bajos y\nUruguay")
+
+ggarrange(infected_p1, infected_p2)
 ```
 
 #### Group 1
 
-```{r fig.width=5, fig.heigth = 4}
-ggplot(data = covid_tbl %>% 
-         filter(COUNTRY %in% c("URUGUAY")), 
-       aes(x = FECHA, y = CONTAGIADOS)) +
+```{r}
+covid_tbl %>% 
+  filter(COUNTRY %in% c("URUGUAY")) %>% 
+  ggplot(aes(x = FECHA, y  = CONTAGIADOS)) +
   geom_point() +
   geom_smooth(se = FALSE) +
   scale_x_date(date_labels = "%b",
@@ -133,10 +162,10 @@ ggplot(data = covid_tbl %>%
 
 #### Group 2
 
-```{r fig.width=10, fig.height=7}
-ggplot(data = covid_tbl %>% 
-         filter(COUNTRY %in% c("EL SALVADOR", "PUERTO RICO", "PARAGUAY")), 
-       aes(x = FECHA, y = CONTAGIADOS)) +
+```{r}
+covid_tbl %>% 
+  filter(COUNTRY %in% c("EL SALVADOR", "PUERTO RICO", "PARAGUAY")) %>% 
+  ggplot(aes(x = FECHA, y = CONTAGIADOS)) +
   geom_point() +
   geom_smooth(se = FALSE) +
   scale_x_date(date_labels = "%b",
@@ -205,8 +234,8 @@ ggplot(data = covid_tbl %>%
 
 #### All-together
 
-```{r}
-ggplot(data = covid_tbl %>% 
+```{r fig.width=10}
+deaths_p1 <- ggplot(data = covid_tbl %>% 
          filter(FECHA <= as.Date("2020-08-09")), 
        aes(x = FECHA, y = FALLECIDOS_MA, col = COUNTRY)) +
   geom_point() +
@@ -217,15 +246,38 @@ ggplot(data = covid_tbl %>%
                                                       "MEXICO", "COLOMBIA")), 
                    aes(label = COUNTRY), family = "Poppins", 
                    xlim = as.Date("2020-08-15"), ylim = c(100, 950)) +
-  geom_label(aes(label = "*"), family = "Poppins", x = as.Date("2020-08-20"),
+  geom_label(aes(label = "*"), family = "Poppins", x = ymd("2020-08-20"),
              y = 50, col = "black") +
+  scale_x_date(date_labels = "%b",
+               limits = as.Date(c("2020-03-01", "2020-09-15")),
+               breaks = seq.Date(from = ymd("2020-03-01"),
+                                 to = ymd("2020-09-01"),
+                                 by = "month")) +
+  custom_theme +
+  labs(y = "MUERTES", caption = "* Países con número de muertes menor a 100 en la ultima semana: Chile,\nBolivia, Ecuador, Guatemala, Paraguay, España, Puerto Rico, El Salvador, Países Bajos y\nUruguay")
+
+deaths_p2 <- ggplot(data = covid_tbl %>% 
+         filter(FECHA <= ymd("2020-08-09")), 
+       aes(x = FECHA, y = FALLECIDOS_MILL_MA, col = COUNTRY)) +
+  geom_point() +
+  geom_line() +
+  # geom_smooth(se = FALSE) +
+  geom_label_repel(data = . %>% filter(FECHA == as.Date("2020-08-09"),
+                                       COUNTRY %in% c("BRAZIL", "PERU", 
+                                                      "MEXICO", "COLOMBIA")), 
+                   aes(label = COUNTRY), family = "Poppins", 
+                   xlim = as.Date("2020-08-15"), ylim = c(20, 120)) +
+  geom_label(aes(label = "*"), family = "Poppins", x = as.Date("2020-08-20"),
+             y = 5, col = "black") +
   scale_x_date(date_labels = "%b",
                limits = as.Date(c("2020-03-01", "2020-09-15")),
                breaks = seq.Date(from = as.Date("2020-03-01"),
                                  to = as.Date("2020-09-01"),
                                  by = "month")) +
   custom_theme +
-  labs(y = "MUERTES", caption = "* Países con número de muertes menor a 100 en la ultima semana: Chile,\nBolivia, Ecuador, Guatemala, Paraguay, España, Puerto Rico, El Salvador, Países Bajos y\nUruguay")
+  labs(y = "MUERTES", caption = "* Países con número de muertes por millón menor a 10 en la ultima semana: Chile,\nBolivia, Ecuador, Guatemala, Paraguay, España, Puerto Rico, El Salvador, Países Bajos y\nUruguay")
+
+ggpubr::ggarrange(deaths_p1, deaths_p2)
 ```
 
 #### Group 1
@@ -340,7 +392,7 @@ ggplot(data = covid_tbl %>%
   theme(strip.text = element_text(size = 15))
 ```
 
-## Grupo 2
+#### Grupo 2
 
 ```{r}
 ggplot(data = covid_tbl %>% 
@@ -440,7 +492,7 @@ covid_tbl %>%
   ggplot(aes(x = FECHA, y = R0_14)) +
   geom_point() +
   geom_smooth(se = FALSE) +
-  facet_wrap(~COUNTRY) +
+  facet_wrap(~COUNTRY, nrow = 2) +
   scale_x_date(limit = c(as.Date("2020-03-25"), as.Date("2020-08-23"))) +
   scale_y_continuous(limit = c(0, 25)) +
   labs(y = "R0") +
