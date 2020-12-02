@@ -4,7 +4,7 @@ mov_avg <- function(x, n) {
   # n: size for the average
   ans <- numeric()
   for (i in 1:(length(x)-n+1)) {
-    ans[i] <- mean(x[i:(i+n-1)])
+    ans[i] <- mean(x[i:(i+n-1)], na.rm = T)
   }
   return(c(rep(NA, (n-1)/2), ans, rep(NA, (n-1)/2)))
 }
