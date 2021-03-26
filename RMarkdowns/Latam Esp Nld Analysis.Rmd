@@ -67,12 +67,14 @@ source("../Scripts/Moving-average-function.R")
 # Online
 covid <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1YnsFPlJHJ9TQB5lZnqoEY6HZKkjRbns2kBr9I4HwNG4/edit?usp=sharing")
 
-country_pops <- tibble(
-  COUNTRY = unique(covid$COUNTRY),
-  POP = c(11673021, 212559417, 212559417, 50882891, 17643054,
-          6486205, 17915568, 128932753, 17134872, 7132538,
-          32971854, 2860853, 46754778, 3473730)
-)
+# country_pops <- tibble(
+#   COUNTRY = unique(covid$COUNTRY),
+#   POP = c(11673021, 212559417, 19116201, 50882891, 17643054,
+#           6486205, 17915568, 128932753, 17134872, 7132538,
+#           32971854, 2860853, 46754778, 3473730)
+# )
+country_pops <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1YnsFPlJHJ9TQB5lZnqoEY6HZKkjRbns2kBr9I4HwNG4/edit#gid=1550796837", 
+                           sheetid = 2)
 
 covid_tbl <- covid %>% 
   left_join(country_pops) %>%
@@ -81,6 +83,7 @@ covid_tbl <- covid %>%
          COUNTRY = as.factor(COUNTRY),
          FECHA = dmy(FECHA),
          IP = CONTAGIADOS + FALLECIDOS - RECUPERADOS,
+         IP_mov_avg = mov_avg(IP, 7),
          R0_14 = R0(CONTAGIADOS, 14)) %>%
   group_by(COUNTRY) %>% 
   mutate(CONTAGIADOS_MA = mov_avg(CONTAGIADOS, 7),
@@ -133,9 +136,9 @@ infected_p2 <- covid_tbl %>%
                                                       "PERU", "MEXICO",
                                                       "COLOMBIA")), 
                    aes(label = COUNTRY), family = "Poppins", 
-                   xlim = date("2020-09-02"), ylim = c(300, 4000)) +
+                   xlim = date("2020-09-02"), ylim = c(80, 4000)) +
   geom_label(aes(label = "*"), family = "Poppins", x = date("2020-09-16"),
-             y = 70, col = "black") +
+             y = 40, col = "black") +
   scale_x_date(date_labels = "%b",
                limits = date(c("2020-03-01", "2020-10-20")),
                breaks = seq.Date(from = date("2020-03-01"),
