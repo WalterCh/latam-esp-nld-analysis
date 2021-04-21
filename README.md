@@ -12,7 +12,7 @@
 6. Panamá: [http://www.minsa.gob.pa/](http://www.minsa.gob.pa/) / [https://twitter.com/MINSAPma](https://twitter.com/MINSAPma) 
 7. Chile: [https://www.gob.cl/coronavirus/cifrasoficiales/](https://www.gob.cl/coronavirus/cifrasoficiales/)
 8. Bolivia:[https://www.boliviasegura.gob.bo/](https://www.boliviasegura.gob.bo/)
-
+9. `[...]
 ---
 
 ## Summary info per country
